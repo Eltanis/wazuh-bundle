@@ -1,0 +1,28 @@
+  <!-- Agent : Serveur Web (Nginx / Apache) -->
+  <syscheck>
+    <directories check_all="yes" realtime="yes" report_changes="yes">/var/www/html</directories>
+    <directories check_all="yes" realtime="yes">/etc/nginx</directories>
+    <directories check_all="yes" realtime="yes">/etc/apache2</directories>
+    <directories check_all="yes" realtime="yes">/etc/ssl/certs</directories>
+  </syscheck>
+
+  <localfile>
+    <log_format>apache</log_format>
+    <location>/var/log/nginx/access.log</location>
+  </localfile>
+  <localfile>
+    <log_format>apache</log_format>
+    <location>/var/log/nginx/error.log</location>
+  </localfile>
+  <localfile>
+    <log_format>apache</log_format>
+    <location>/var/log/apache2/access.log</location>
+  </localfile>
+  <localfile>
+    <log_format>apache</log_format>
+    <location>/var/log/apache2/error.log</location>
+  </localfile>
+  <localfile>
+    <log_format>syslog</log_format>
+    <location>/var/log/auth.log</location>
+  </localfile>

@@ -1,0 +1,25 @@
+  <!-- Agent : Serveur d'Administration
+       Surveillance renforcée — cible prioritaire en cas de compromission -->
+  <syscheck>
+    <directories check_all="yes" realtime="yes" report_changes="yes">/etc</directories>
+    <directories check_all="yes" realtime="yes" report_changes="yes">/usr/bin</directories>
+    <directories check_all="yes" realtime="yes" report_changes="yes">/usr/sbin</directories>
+    <directories check_all="yes" realtime="yes" report_changes="yes">/root/.ssh</directories>
+    <directories check_all="yes" realtime="yes" report_changes="yes">/home</directories>
+    <directories check_all="yes" realtime="yes">/etc/cron.d</directories>
+    <ignore type="sregex">.log$|.tmp$|.swp$|.bash_history$</ignore>
+  </syscheck>
+
+  <localfile>
+    <log_format>syslog</log_format>
+    <location>/var/log/auth.log</location>
+  </localfile>
+  <localfile>
+    <log_format>syslog</log_format>
+    <location>/var/log/syslog</location>
+  </localfile>
+  <localfile>
+    <log_format>full_command</log_format>
+    <command>last -n 20</command>
+    <frequency>300</frequency>
+  </localfile>

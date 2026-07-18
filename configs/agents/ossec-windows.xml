@@ -1,0 +1,21 @@
+  <!-- Agent : Client Windows
+       FIM sur fichiers système + registre (clés de persistance)
+       Event Log : connexions, créations de comptes, exécution de processus -->
+  <syscheck>
+    <directories check_all="yes" realtime="yes">%WINDIR%\System32\drivers\etc</directories>
+    <directories check_all="yes" realtime="yes">%PROGRAMFILES%</directories>
+    <windows_registry>HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Run</windows_registry>
+    <windows_registry>HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services</windows_registry>
+  </syscheck>
+
+  <!-- 4624=logon OK | 4625=logon KO | 4648=creds explicites
+       4688=nouveau processus | 4720=compte créé | 4732=ajout groupe -->
+  <localfile>
+    <log_format>eventchannel</log_format>
+    <location>Security</location>
+    <query>Event/System[EventID=4624 or EventID=4625 or EventID=4648 or EventID=4688 or EventID=4720 or EventID=4732]</query>
+  </localfile>
+  <localfile>
+    <log_format>eventchannel</log_format>
+    <location>System</location>
+  </localfile>

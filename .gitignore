@@ -1,0 +1,5 @@
+*.bak.*
+*.log
+wazuh-install-files/
+__pycache__/
+*.pyc

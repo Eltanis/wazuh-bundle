@@ -1,0 +1,21 @@
+  <!-- Agent : Serveur Base de Données (MySQL / PostgreSQL) -->
+  <syscheck>
+    <!-- Configs uniquement, les fichiers de données changent en permanence -->
+    <directories check_all="yes" realtime="yes">/etc/mysql</directories>
+    <directories check_all="yes" realtime="yes">/etc/postgresql</directories>
+    <ignore>/var/lib/mysql</ignore>
+    <ignore>/var/lib/postgresql</ignore>
+  </syscheck>
+
+  <localfile>
+    <log_format>syslog</log_format>
+    <location>/var/log/mysql/error.log</location>
+  </localfile>
+  <localfile>
+    <log_format>syslog</log_format>
+    <location>/var/log/postgresql/postgresql-*.log</location>
+  </localfile>
+  <localfile>
+    <log_format>syslog</log_format>
+    <location>/var/log/auth.log</location>
+  </localfile>

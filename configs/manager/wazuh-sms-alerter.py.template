@@ -1,0 +1,86 @@
+#!/usr/bin/env python3
+# ============================================================
+# wazuh-sms-alerter.py — Daemon SMS Wazuh + Africa's Talking
+#
+# Emplacement final : /usr/local/bin/wazuh-sms-alerter.py
+# Déployé par : bash/manager/08_sms_alerts.sh
+#
+# Principe : surveille alerts.json en temps réel (tail -f),
+# envoie un SMS pour chaque alerte level >= ALERT_LEVEL.
+#
+# NB : On n'utilise PAS le mécanisme d'intégration natif Wazuh
+# car Wazuh 4.14 bloque les intégrations custom non whitelistées
+# (seuls slack, pagerduty, virustotal, shuffle, maltiverse sont
+# acceptés). Un daemon systemd est plus fiable et plus flexible.
+#
+# Placeholders remplacés par 08_sms_alerts.sh :
+#   __AT_USERNAME__    → username Africa's Talking (sandbox ou prod)
+#   __AT_API_KEY__     → clé API Africa's Talking
+#   __SMS_RECIPIENT__  → numéro destinataire format +241XXXXXXXX
+#   __ALERT_LEVEL__    → niveau minimum (défaut : 8)
+# ============================================================
+import json
+import time
+import sys
+
+AT_USERNAME  = "__AT_USERNAME__"
+AT_API_KEY   = "__AT_API_KEY__"
+SMS_TO       = ["__SMS_RECIPIENT__"]
+ALERT_LEVEL  = __ALERT_LEVEL__
+ALERTS_FILE  = "/var/ossec/logs/alerts/alerts.json"
+
+try:
+    import africastalking
+except ImportError:
+    print("ERREUR : module 'africastalking' introuvable.")
+    print("Installe-le avec l'une de ces commandes :")
+    print("  pip3 install africastalking --break-system-packages")
+    print("  python3 -m pip install africastalking --break-system-packages")
+    print("Si pip3 est absent : sudo apt-get install -y python3-pip")
+    sys.exit(1)
+
+africastalking.initialize(AT_USERNAME, AT_API_KEY)
+sms = africastalking.SMS
+
+def format_sms(alert: dict) -> str:
+    """Formate le SMS — 160 chars max."""
+    level = alert.get("rule", {}).get("level", "?")
+    desc  = alert.get("rule", {}).get("description", "Alerte")
+    agent = alert.get("agent", {}).get("name", "inconnu")
+    ts    = alert.get("timestamp", "")[:16].replace("T", " ")
+    return f"[WAZUH L{level}] {agent} | {ts} | {desc}"[:160]
+
+def tail_alerts():
+    """Lit alerts.json en continu depuis la fin du fichier."""
+    with open(ALERTS_FILE, "r") as f:
+        f.seek(0, 2)  # positionne à la fin
+        while True:
+            line = f.readline()
+            if not line:
+                time.sleep(1)
+                continue
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                alert = json.loads(line)
+                level = int(alert.get("rule", {}).get("level", 0))
+                if level >= ALERT_LEVEL:
+                    msg  = format_sms(alert)
+                    resp = sms.send(msg, SMS_TO)
+                    recipients = resp.get("SMSMessageData", {}).get("Recipients", [])
+                    for r in recipients:
+                        print(
+                            f"SMS -> {r.get('number')} | "
+                            f"status: {r.get('status')} | "
+                            f"cost: {r.get('cost')}",
+                            flush=True
+                        )
+            except json.JSONDecodeError:
+                pass  # ligne incomplète (écriture en cours), on attend
+            except Exception as e:
+                print(f"[WARN] {e}", flush=True)
+
+if __name__ == "__main__":
+    print(f"Wazuh SMS Alerter démarré (level >= {ALERT_LEVEL})...", flush=True)
+    tail_alerts()

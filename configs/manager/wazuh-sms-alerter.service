@@ -1,0 +1,19 @@
+[Unit]
+Description=Wazuh SMS Alerter via Africa-s Talking
+Documentation=https://africastalking.com/docs
+After=wazuh-manager.service network.target
+Wants=wazuh-manager.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /usr/local/bin/wazuh-sms-alerter.py
+Restart=always
+RestartSec=10
+User=root
+
+# Redémarre automatiquement si wazuh-manager redémarre
+# (le fichier alerts.json peut être recréé)
+ExecStartPre=/bin/sleep 3
+
+[Install]
+WantedBy=multi-user.target

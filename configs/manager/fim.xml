@@ -1,0 +1,35 @@
+<!-- ============================================================
+       FIM — bundle Wazuh Monitoring
+       Injecté dans ossec.conf par 01_configure_fim.sh
+       
+       IMPORTANT : ne contient PAS de bloc vulnerability-detector
+       car Wazuh 4.8+ le gère différemment (<vulnerability-detection>
+       est déjà présent dans la config par défaut de l'installeur).
+       ============================================================ -->
+
+  <!-- Surveillance realtime du webroot et des configs critiques -->
+  <syscheck>
+    <directories check_all="yes" realtime="yes" report_changes="yes">/var/www</directories>
+    <directories check_all="yes" realtime="yes">/etc/nginx</directories>
+    <directories check_all="yes" realtime="yes">/etc/apache2</directories>
+    <directories check_all="yes" realtime="yes">/etc/ssh</directories>
+  </syscheck>
+
+  <!-- Logs auth et syslog pour détection brute force -->
+  <localfile>
+    <log_format>syslog</log_format>
+    <location>/var/log/auth.log</location>
+  </localfile>
+
+  <localfile>
+    <log_format>syslog</log_format>
+    <location>/var/log/syslog</location>
+  </localfile>
+
+  <!-- Active response : blocage IP sur brute force SSH et règle custom 100100 -->
+  <active-response>
+    <command>firewall-drop</command>
+    <location>local</location>
+    <rules_id>5712,5763,100100</rules_id>
+    <timeout>600</timeout>
+  </active-response>

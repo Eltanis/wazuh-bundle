@@ -1,0 +1,16 @@
+  <!-- Agent : Client Linux -->
+  <syscheck>
+    <directories check_all="yes" realtime="yes" report_changes="yes">/etc</directories>
+    <directories check_all="yes" realtime="yes">/usr/bin</directories>
+    <directories check_all="yes" realtime="yes">/usr/sbin</directories>
+    <ignore type="sregex">.log$|.tmp$|.swp$</ignore>
+  </syscheck>
+
+  <localfile>
+    <log_format>syslog</log_format>
+    <location>/var/log/auth.log</location>
+  </localfile>
+  <localfile>
+    <log_format>syslog</log_format>
+    <location>/var/log/syslog</location>
+  </localfile>

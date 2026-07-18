@@ -1,0 +1,13 @@
+  <!-- ============================================================
+       INTEGRATION VIRUSTOTAL — bundle Wazuh Monitoring
+       Injecté dans ossec.conf par 02_configure_vt.sh
+       Placeholder __VT_API_KEY__ remplacé automatiquement
+
+       Limite clé gratuite : 4 requêtes/min, 500/jour.
+       ============================================================ -->
+  <integration>
+    <name>virustotal</name>
+    <api_key>__VT_API_KEY__</api_key>
+    <rule_id>554,553,550,552</rule_id>
+    <alert_format>json</alert_format>
+  </integration>
