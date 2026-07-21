@@ -4,6 +4,10 @@ Stack SOC clé en main : **Wazuh 4.14 + Grafana + Alertes SMS/Email**
 
 Surveillance d'un parc hétérogène (serveurs web, bases de données, postes Windows/Linux) avec détection d'intrusion, intégrité des fichiers (FIM), analyse VirusTotal et alertes temps réel.
 
+![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
+![Platform](https://img.shields.io/badge/Platform-Debian%2012%2F13-blue)
+![Wazuh](https://img.shields.io/badge/Wazuh-4.14-red)
+
 ---
 
 ## Démarrage rapide
