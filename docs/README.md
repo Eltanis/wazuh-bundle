@@ -86,11 +86,6 @@ wazuh-bundle/
     ├── INSTALL.md
     └── TROUBLESHOOTING.md
 ```
-
-## Pwd
-nano /root/.wazuh-bundle/wazuh-passwords.txt
----
-
 ## Prérequis
 
 - Debian 12 ou 13 (recommandé)
