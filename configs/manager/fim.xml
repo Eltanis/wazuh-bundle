@@ -9,10 +9,25 @@
 
   <!-- Surveillance realtime du webroot et des configs critiques -->
   <syscheck>
-    <directories check_all="yes" realtime="yes" report_changes="yes">/var/www</directories>
-    <directories check_all="yes" realtime="yes">/etc/nginx</directories>
-    <directories check_all="yes" realtime="yes">/etc/apache2</directories>
-    <directories check_all="yes" realtime="yes">/etc/ssh</directories>
+    <scan_on_start>yes</scan_on_start>
+    <directories check_all="yes" realtime="yes" report_changes="yes">/var/ossec/etc</directories>
+    <directories check_all="yes" realtime="yes" report_changes="yes">/etc/ssh</directories>
+    <directories check_all="yes" realtime="yes" report_changes="yes">/etc/ssl,/etc/pki</directories>
+
+    <directories check_all="yes" realtime="yes">/bin,/sbin,/usr/bin,/usr/sbin</directories>
+    <directories check_all="yes" realtime="yes">/lib,/lib64,/usr/lib</directories>  
+    
+
+    <!-- Fichiers temporaires ou dynamiques mis à jour par l'OS -->
+    <ignore>/etc/mtab</ignore>
+    <ignore>/etc/hosts.deny</ignore>
+    <ignore>/etc/mail/statistics</ignore>
+    <ignore>/etc/random-seed</ignore>
+    <ignore>/etc/adjtime</ignore>
+    <ignore>/etc/httpd/logs</ignore>
+    <ignore>/var/ossec/queue</ignore>
+
+
   </syscheck>
 
   <!-- Logs auth et syslog pour détection brute force -->

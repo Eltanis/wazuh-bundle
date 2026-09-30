@@ -11,9 +11,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common.sh"
 require_root
 
-STATIC_IP="192.x.x.x"
+STATIC_IP="192.x.x.x/x"
 GATEWAY="192.x.x.x"
 INTERFACE="enp0s3"
+DNS_SERVERS="1.1.1.1 8.8.8.8"
 SET_STATIC_IP=false
 
 # Dossier de sauvegarde sécurisé (lisible root uniquement)
@@ -33,11 +34,76 @@ sed -i 's/^#*MaxAuthTries.*/MaxAuthTries 3/' /etc/ssh/sshd_config
 systemctl restart ssh
 log_ok "SSH durci (root login désactivé, 3 tentatives max)"
 
+
+
 # 2. IP statique (optionnel)
+
+configure_static_ip() {
+  local iface="$1" cidr="$2" gw="$3" dns="$4"
+ 
+  if [[ "$cidr" != */* ]]; then
+    log_err "STATIC_IP doit inclure le préfixe CIDR, ex: 192.168.1.50/24 (valeur actuelle : $cidr)"
+    exit 1
+  fi
+ 
+  if ! ip link show "$iface" &>/dev/null; then
+    log_err "Interface '$iface' introuvable. Interfaces disponibles :"
+    ip -o link show | awk -F': ' '{print "  - "$2}'
+    exit 1
+  fi
+ 
+  local addr="${cidr%%/*}"
+  local prefix="${cidr##*/}"
+ 
+  if [[ -f /etc/network/interfaces ]]; then
+    log_info "ifupdown détecté — écriture de la config statique dans /etc/network/interfaces"
+    local netmask
+    netmask="$(python3 -c "import ipaddress; print(ipaddress.IPv4Network('0.0.0.0/${prefix}').netmask)")"
+ 
+    backup_file /etc/network/interfaces
+ 
+    # Retire toute ancienne définition (dhcp ou static) de cette interface,
+    # pour éviter un conflit de doublon (deux "auto iface", etc.).
+    if grep -qE "^(auto|iface) ${iface}( |\$)" /etc/network/interfaces 2>/dev/null; then
+      awk -v ifc="$iface" '
+        BEGIN{skip=0}
+        /^auto / && $2==ifc {skip=1; next}
+        /^iface / && $2==ifc {skip=1; next}
+        skip==1 && /^[[:space:]]/ {next}
+        skip==1 && /^$/ {skip=0; next}
+        skip==1 {skip=0}
+        {print}
+      ' /etc/network/interfaces > /etc/network/interfaces.new
+      mv /etc/network/interfaces.new /etc/network/interfaces
+      log_warn "Ancienne définition de $iface retirée de /etc/network/interfaces"
+    fi
+ 
+    # Ajoute la nouvelle définition à la fin du fichier
+    cat >> /etc/network/interfaces <<EOF
+ 
+auto ${iface}
+iface ${iface} inet static
+    address ${addr}
+    netmask ${netmask}
+    gateway ${gw}
+    dns-nameservers ${dns}
+EOF
+ 
+    ifdown "$iface" 2>/dev/null || true
+    ifup "$iface"
+    log_ok "ifupdown appliqué sur $iface -> $cidr (config dans /etc/network/interfaces)"
+ 
+  else
+    log_err "/etc/network/interfaces introuvable (ifupdown non détecté) — configure $iface manuellement."
+    return 1
+  fi
+}
+
 log_info "=== 2/5 : IP statique ==="
 if [[ "$SET_STATIC_IP" == "true" ]]; then
-  NODE_IP="$STATIC_IP"
-  log_warn "TODO : configurer le bloc netplan/ifupdown pour $INTERFACE -> $STATIC_IP"
+  configure_static_ip "$INTERFACE" "$STATIC_IP" "$GATEWAY" "$DNS_SERVERS"
+  NODE_IP="${STATIC_IP%%/*}"
+  log_ok "IP statique active : $NODE_IP sur $INTERFACE"
 else
   NODE_IP="$(hostname -I | awk '{print $1}')"
   log_warn "Mode DHCP — IP détectée : $NODE_IP"
@@ -90,7 +156,9 @@ else
 fi
 
 
+
 # 5.Nettoyage
+log_info "=== 4/5 : clean ==="
 cd /tmp
 rm -rf "$WORK_DIR"
 log_info "installation terminé et nettoyé."

@@ -133,4 +133,5 @@ restart_grafana() {
     log_err "Détails : journalctl -xeu grafana-server --no-pager | tail -20"
     return 1
   fi
+  return 0
 }

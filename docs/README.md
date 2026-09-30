@@ -1,6 +1,6 @@
 # Wazuh Monitoring Bundle
 
-Stack SOC clé en main : **Wazuh 4.14 + Grafana + Alertes SMS/Email**
+Stack SOC clé en main : **Wazuh 4.14 + Grafana + Alertes System,**
 
 Surveillance d'un parc hétérogène (serveurs web, bases de données, postes Windows/Linux) avec détection d'intrusion, intégrité des fichiers (FIM), analyse VirusTotal et alertes temps réel.
 
@@ -83,9 +83,6 @@ wazuh-bundle/
     └── TROUBLESHOOTING.md
 ```
 
-## Pwd
-nano /root/.wazuh-bundle/wazuh-passwords.txt
----
 
 ## Prérequis
 
